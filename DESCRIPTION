@@ -1,0 +1,18 @@
+Package: nhanesgamlss
+Type: Package
+Title: Simulate Matched Weight/Age Distribution
+Version: 0.1.0
+Author: Samer Mouksassi
+Maintainer: The package maintainer <samermouksassi@gmail.com>
+Description: A function that allow the user to simulate matched weight/age
+    distributions from age 0 to 18 years based on GAMLSS models built on
+    NHANES data.
+License: GPL-2 | file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+    gamlss,
+    tidyr
+URL: https://github.com/smouksassi/nhanesgamlss
+BugReports: https://github.com/smouksassi/nhanesgamlss/issues
+RoxygenNote: 6.0.1
