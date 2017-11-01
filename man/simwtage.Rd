@@ -4,10 +4,10 @@
 \alias{simwtage}
 \title{Simulate Weight Age Pairs.}
 \usage{
-simwtage(gamlssbcpemodel = mBOYS20, optimizedparameters = op120,
-  modeldata = BMXBOY20, indexofparameterfortransformedage = NULL,
-  startageyears = 0, endageyears = 2, stepageincrease = 1/12,
-  nweightsperage = 500, sex = "boys", exclusionthresholdup = 0.97,
+simwtage(gamlssbcpemodel, optimizedparameters, modeldata,
+  indexofparameterfortransformedage = NULL, startageyears = 0,
+  endageyears = 2, stepageincrease = 1/12, nweightsperage = 500,
+  sex = "boys", exclusionthresholdup = 0.97,
   exclusionthresholddown = 0.03, seed = 456784112)
 }
 \arguments{
@@ -32,21 +32,41 @@ simwtage(gamlssbcpemodel = mBOYS20, optimizedparameters = op120,
 \item{exclusionthresholdup}{The percentile that determines at which upper percentile we exlude simulated weights. Default to 0.03 (third percentile).}
 
 \item{exclusionthresholddown}{The percentile that determines at which lower percentile we exlude simulated weights. Default to 0.97 (ninety seventh percentile).}
+
+\item{seed}{A seed number to ensure reproducibility}
 }
 \value{
-The simulated data with a sequential ID, AGEY (Age in years) WT (weight in kg) SEX (sex argument specified string).
+The simulated data with age in years and weight in kg and the sepcified sex character string.
 }
 \description{
 Simulate Weight Age Pairs.
 }
 \examples{
 require(gamlss)
-require(nhanesgamlss)
 require(tidyr)
+require(nhanesgamlss)
+
+mBOYS20 <- gamlss(WT ~ cs(nage, df = op120$par[1]),
+sigma.fo = ~cs(nage,df = op120$par[2]),
+nu.fo = ~cs(nage, df =  op120$par[3] ),
+c.spar = c(-1.5,2.5),
+tau.fo = ~cs(nage, df = op120$par[4]),
+data = BMXBOY20, family = BCPE)
+
 simwtage(gamlssbcpemodel = mBOYS20, optimizedparameters = op120, modeldata = BMXBOY20,
-indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18, stepageincrease = 1,
-nweightsperage = 500, sex = "boys", exclusionthresholdup = 0.97, exclusionthresholddown = 0.03, seed = 456784112)
-simwtage(gamlssbcpemodel = mGIRLS20, optimizedparameters = op220, modeldata = BMXGIRL20,
-indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18, stepageincrease = 1,
-nweightsperage = 500, sex = "girls", exclusionthresholdup = 0.97, exclusionthresholddown = 0.03, seed = 456784112)
+indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18,
+stepageincrease = 1, nweightsperage = 500, sex = "boys", exclusionthresholdup = 0.97,
+exclusionthresholddown = 0.03, seed = 456784112)
+
+mGIRLS20 <- gamlss(WT ~ cs(nage, df = op2200$par[1]),
+sigma.fo = ~cs(nage,df = op2200$par[2]),
+nu.fo = ~cs(nage, df =  op2200$par[3] ),
+c.spar = c(-1.5,2.5),
+tau.fo = ~cs(nage, df = op2200$par[4]),
+data = BMXGIRL20, family = BCPE)
+
+simwtage(gamlssbcpemodel = mGIRLS20, optimizedparameters = op2200, modeldata = BMXGIRL20,
+indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18,
+stepageincrease = 1, nweightsperage = 500, sex = "girls", exclusionthresholdup = 0.97,
+exclusionthresholddown = 0.03, seed = 456784112)
 }

@@ -18,10 +18,12 @@ mBOYS20 <- gamlss::gamlss(WT ~ gamlss::cs(nage, df = op120$par[1]),
 
 
 
-gamlss::gamlss(WT ~ cs(nage, df = op120$par[1]), sigma.fo = ~cs(nage,df = op120$par[2]),
-       nu.fo = ~cs(nage, df =  op120$par[3] ),
-       c.spar = c(-1.5,2.5), tau.fo = ~cs(nage, df = op120$par[4]),
-       data = BMXBOY20, family = BCPE)
+mBOYS20 <- gamlss(WT ~ cs(nage, df = op120$par[1]),
+                  sigma.fo = ~cs(nage,df = op120$par[2]),
+                  nu.fo = ~cs(nage, df =  op120$par[3] ),
+                  c.spar = c(-1.5,2.5),
+                  tau.fo = ~cs(nage, df = op120$par[4]),
+                  data = BMXBOY20, family = BCPE)
 
 
 plot(mBOYS20)
