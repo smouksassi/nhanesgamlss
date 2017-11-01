@@ -11,24 +11,42 @@
 #' @param sex A string to add to the generated data.
 #' @param exclusionthresholdup The percentile that determines at which upper percentile we exlude simulated weights. Default to 0.03 (third percentile).
 #' @param exclusionthresholddown The percentile that determines at which lower percentile we exlude simulated weights. Default to 0.97 (ninety seventh percentile).
-#' @param seed
-#' @return The simulated data with a sequential ID, AGEY (Age in years) WT (weight in kg) SEX (sex argument specified string).
+#' @param seed A seed number to ensure reproducibility
+#' @return The simulated data with age in years and weight in kg and the sepcified sex character string.
 #' @examples
 #' require(gamlss)
-#' require(nhanesgamlss)
 #' require(tidyr)
+#' require(nhanesgamlss)
+#' 
+#' mBOYS20 <- gamlss(WT ~ cs(nage, df = op120$par[1]),
+#' sigma.fo = ~cs(nage,df = op120$par[2]),
+#' nu.fo = ~cs(nage, df =  op120$par[3] ),
+#' c.spar = c(-1.5,2.5),
+#' tau.fo = ~cs(nage, df = op120$par[4]),
+#' data = BMXBOY20, family = BCPE)
+#' 
 #' simwtage(gamlssbcpemodel = mBOYS20, optimizedparameters = op120, modeldata = BMXBOY20,
-#' indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18, stepageincrease = 1,
-#' nweightsperage = 500, sex = "boys", exclusionthresholdup = 0.97, exclusionthresholddown = 0.03, seed = 456784112)
-#' simwtage(gamlssbcpemodel = mGIRLS20, optimizedparameters = op220, modeldata = BMXGIRL20,
-#' indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18, stepageincrease = 1,
-#' nweightsperage = 500, sex = "girls", exclusionthresholdup = 0.97, exclusionthresholddown = 0.03, seed = 456784112)
+#' indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18,
+#' stepageincrease = 1, nweightsperage = 500, sex = "boys", exclusionthresholdup = 0.97,
+#' exclusionthresholddown = 0.03, seed = 456784112)
+#' 
+#' mGIRLS20 <- gamlss(WT ~ cs(nage, df = op2200$par[1]),
+#' sigma.fo = ~cs(nage,df = op2200$par[2]),
+#' nu.fo = ~cs(nage, df =  op2200$par[3] ),
+#' c.spar = c(-1.5,2.5),
+#' tau.fo = ~cs(nage, df = op2200$par[4]),
+#' data = BMXGIRL20, family = BCPE)
+#' 
+#' simwtage(gamlssbcpemodel = mGIRLS20, optimizedparameters = op2200, modeldata = BMXGIRL20,
+#' indexofparameterfortransformedage = 5, startageyears = 0, endageyears = 18,
+#' stepageincrease = 1, nweightsperage = 500, sex = "girls", exclusionthresholdup = 0.97,
+#' exclusionthresholddown = 0.03, seed = 456784112)
 
 
 
-simwtage <- function(gamlssbcpemodel = mBOYS20,
-                     optimizedparameters = op120,
-                     modeldata = BMXBOY20,
+simwtage <- function(gamlssbcpemodel,
+                     optimizedparameters,
+                     modeldata,
     indexofparameterfortransformedage = NULL,
     startageyears = 0,
     endageyears = 2,
@@ -47,18 +65,18 @@ simwtage <- function(gamlssbcpemodel = mBOYS20,
     rrow <- length(newdb$AGE)
     simwtageoutput <- data.frame(matrix(NA, nrow = rrow, ncol = nweightsperage))
     for (i in 1:rrow) {
-        simpoints <- (rBCPE(nweightsperage * 10, mu = simmodelprediction$mu[i], sigma = simmodelprediction$sigma[i],
+        simpoints <- (gamlss.dist::rBCPE(nweightsperage * 10, mu = simmodelprediction$mu[i], sigma = simmodelprediction$sigma[i],
             nu = simmodelprediction$nu[i], tau = simmodelprediction$tau[i]))
-        simwtageoutput[i, ] <- sample(simpoints[simpoints < qBCPE(exclusionthresholdup,
+        simwtageoutput[i, ] <- sample(simpoints[simpoints < gamlss.dist::qBCPE(exclusionthresholdup,
             mu = simmodelprediction$mu[i], sigma = simmodelprediction$sigma[i], nu = simmodelprediction$nu[i],
-            tau = simmodelprediction$tau[i]) & simpoints > qBCPE(exclusionthresholddown,
+            tau = simmodelprediction$tau[i]) & simpoints > gamlss.dist::qBCPE(exclusionthresholddown,
             mu = simmodelprediction$mu[i], sigma = simmodelprediction$sigma[i], nu = simmodelprediction$nu[i],
             tau = simmodelprediction$tau[i])], nweightsperage)
     }
     simwtageoutput <- as.data.frame(simwtageoutput)
-    names(simwtageoutput) <- paste0("Var", 1:ncol(simwtageoutput))
+    names(simwtageoutput) <- paste0("Var", 1:nweightsperage)
     simwtageoutput$AGEY <- newdb$AGE/12
-    simwtageoutput <- tidyr::gather(simwtageoutput,ID, WT, -AGEY)
+    simwtageoutput <- tidyr::gather(simwtageoutput,"ID", "WT", paste0("Var", 1:nweightsperage))
     simwtageoutput$ID <- seq(1, nrow(simwtageoutput), 1)
     simwtageoutput <-simwtageoutput[ , c("ID", "AGEY", "WT")]
     simwtageoutput$SEX <- sex
