@@ -49,3 +49,34 @@ ggplot2::labs(x="Age (years)",y="Weight (kg)")
 ```
 ![Example output with different arguments](./exampleoutput.png?raw=true "Example output")
 
+## Simulation from provided LMS values
+Several sources do not provide the data, and they provide the model LMS values instead. `gamlss.dist` has a function `rBCCG` that can be used to simulate using LMS values.
+```
+wtage <- read.csv (url("https://www.cdc.gov/growthcharts/data/zscore/wtage.csv"))
+simulatedWT <- rBCCG(1000000, mu = wtage[1,"M"], sigma = wtage[1,"S"], nu = wtage[1,"L"])
+quantile(simulatedWT,probs=c(0.03,0.05,0.1,0.25,0.5,0.75,0.90,0.95,0.97))
+wtage[1,6:14]
+
+nweightsperage <- 10
+simwtageoutput <- data.frame(matrix(NA, nrow = nrow(wtage),
+                                    ncol = nweightsperage))
+names(simwtageoutput) <- paste0("Var", 1:nweightsperage)
+
+for (i in 1:nrow(wtage)) {#
+  simpoints <- gamlss.dist::rBCCG(nweightsperage,
+                                  mu = wtage[i,"M"],
+                                  sigma =  wtage[i,"S"],
+                                  nu = wtage[i,"L"])
+simwtageoutput[i, ] <- simpoints
+}
+simwtageoutput$Agemos  <- wtage$Agemos
+simwtageoutput$AgeY  <- wtage$Agemos/12
+simwtageoutput$Sex <- wtage$Sex
+
+simwtageoutput <- tidyr::gather(simwtageoutput,age,Weight,
+                                paste0("Var", 1:nweightsperage))
+
+ggplot(simwtageoutput,aes(AgeY,Weight))+
+  geom_point()+
+  facet_grid(~Sex)
+```
