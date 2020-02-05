@@ -55,6 +55,9 @@ Several sources do not provide the data, and they provide the model LMS values i
 wtage <- read.csv (url("https://www.cdc.gov/growthcharts/data/zscore/wtage.csv"))
 simulatedWT <- rBCCG(1000000, mu = wtage[1,"M"], sigma = wtage[1,"S"], nu = wtage[1,"L"])
 quantile(simulatedWT,probs=c(0.03,0.05,0.1,0.25,0.5,0.75,0.90,0.95,0.97))
+qBCCG(0.05, mu = wtage[1,"M"],
+sigma = wtage[1,"S"], nu = wtage[1,"L"])
+
 wtage[1,6:14]
 
 nweightsperage <- 10
